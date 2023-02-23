@@ -65,6 +65,7 @@ jobs:
           format: table
 
       - name: Docker meta after CVE scanning
+        id: docker_meta
         uses: docker/metadata-action@v3
         with:
           images: punss21/allhands22
