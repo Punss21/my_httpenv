@@ -25,30 +25,61 @@ jobs:
           username: ${{ secrets.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
 
-      - name: Docker Meta
-        id: docker_meta
-        uses: docker/metadata-action@v3
-        with:
-          images: punss21/allhand22
-          flavour: |
-            latest=false
-          tags: |
-            type=raw,value=04
-            type=raw,value=latest,enable=${{ endsWith(github.ref, github.event.repository.default_branch)}}
-            type=ref,event=pr
-            type=ref,event=branch
-            type=semver,pattern={{version}}
+      # Commented cause over next step we are not pushing the image to registry
+      # - name: Docker Meta
+      #   id: docker_meta
+      #   uses: docker/metadata-action@v3
+      #   with:
+      #     images: punss21/allhand22
+      #     flavour: |
+      #       latest=false
+      #     tags: |
+      #       type=raw,value=04
+      #       type=raw,value=latest,enable=${{ endsWith(github.ref, github.event.repository.default_branch)}}
+      #       type=ref,event=pr
+      #       type=ref,event=branch
+      #       type=semver,pattern={{version}}
 
       - name: Docker Build
         uses: docker/build-push-action@v2
         with:
           #push: ${{ github.event_name != 'pull_request' }}
           #tags: punss21/allhands:latest
-          push: true
-          tags: ${{ steps.docker_meta.outputs.tags}}
-          labels: ${{ steps.docker_meta.outputs.labels }}
-
+          push: false
+          load: true # exporting to docker engine rather then pushin into registry so that CVE
+                     # can be run before pushing it to registry
+          #tags: ${{ steps.docker_meta.outputs.tags}}
+          #labels: ${{ steps.docker_meta.outputs.labels }}
+          tags: ${{ github.run_id }}
+          target: test
           cache-from: type=gha
           cache-to: type=gha,mode=max
 
           platforms: linux/amd64,linux/arm64,linux/arm/v7
+
+      - name: Run trivy for all CVEs (non-blocking)
+        uses: aquasecurity/trivy-action@master
+        with:
+          image-ref: ${{ github.run_id }}
+          exit-code: 0
+          format: table
+
+      - name: Docker meta after CVE scanning
+        uses: docker/metadata-action@v3
+        with:
+          images: punss21/allhands22
+          flavor: |
+            latest=false
+          tags: |
+            type=raw,value=06
+
+      - name: Docker Build and Push to Docker Hub
+        uses: docker/build-push-action@v2
+        with:
+          push: true
+          tags: ${{ steps.docker_meta.outputs.tags }}
+          labels: ${{ steps.docker_meta.outputs.labels }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+          platforms: linux/amd64,linux/arm64,linux/arm/v7
+
