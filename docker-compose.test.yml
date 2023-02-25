@@ -1,9 +1,9 @@
 services:
   allhands22:
-    image: "$(TESTING_IMAGE)"
+    image: "${TESTING_IMAGE}"
 
   httpenv:
-    image: "$(TESTING_IMAGE)"
+    image: "${TESTING_IMAGE}"
 
     depends_on:
       - allhands22
