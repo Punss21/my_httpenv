@@ -8,4 +8,4 @@ services:
     depends_on:
       - allhands22
 
-      command: curl --fail http://localhost:8888 || exit 1
+    command: curl --fail http://localhost:8888 || exit 1
