@@ -6,7 +6,6 @@ services:
     image: "$(TESTING_IMAGE)"
 
     depends_on:
-      allhands22: 
-        condition: service_started
+      - allhands22
 
       command: curl --fail http://localhost:8888 || exit 1
