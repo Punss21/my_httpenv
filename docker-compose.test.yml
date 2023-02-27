@@ -10,10 +10,12 @@ services:
     depends_on:
       - allhands22
 
-  # sut:
-  #   image: "${TESTING_IMAGE}"
-  #   depends_on:
-  #     - httpenv
-  #     - allhands22 
+  sut:
+    image: "${TESTING_IMAGE}"
+    depends_on:
+      - httpenv
+      - allhands22 
+    ports:
+      - 8888:8888
 
-    command: curl --fail http://httpenv:8888 || exit 1
+    command: curl --fail http://sut:8888 || exit 1
