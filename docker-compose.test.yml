@@ -4,8 +4,8 @@ services:
 
   httpenv:
     image: "${TESTING_IMAGE}"
-    ports:
-      - 8888:8888
+    # ports:
+    #   - 8888:8888
 
     depends_on:
       - allhands22
